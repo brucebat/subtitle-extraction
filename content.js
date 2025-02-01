@@ -132,40 +132,16 @@ function setupSubtitleObserver(video) {
 
 // 开始实时字幕提取
 function startRealtimeSubtitleExtraction(video) {
-  // 清除之前的定时器和监听器
+  // 清除之前的定时器
   if (subtitleUpdateInterval) {
     clearInterval(subtitleUpdateInterval);
     subtitleUpdateInterval = null;
   }
 
-  const startExtraction = () => {
-    if (!subtitleUpdateInterval) {
-      subtitleUpdateInterval = setInterval(() => {
-        if (!video.paused) {
-          extractSubtitles();
-        }
-      }, 500); // 每0.5秒检查一次
-    }
-  };
-
-  const stopExtraction = () => {
-    if (subtitleUpdateInterval) {
-      clearInterval(subtitleUpdateInterval);
-      subtitleUpdateInterval = null;
-    }
-  };
-
-  // 监听视频播放状态
-  video.addEventListener('play', startExtraction);
-  video.addEventListener('playing', startExtraction);
-  video.addEventListener('pause', stopExtraction);
-  video.addEventListener('ended', stopExtraction);
-  video.addEventListener('seeking', extractSubtitles);
-
-  // 如果视频已经在播放，立即开始提取
-  if (!video.paused) {
-    startExtraction();
-  }
+  // 设置新的定时器，不再依赖视频播放状态
+  subtitleUpdateInterval = setInterval(() => {
+    extractSubtitles();
+  }, 500); // 每0.5秒检查一次
 }
 
 // 监听来自popup的消息
