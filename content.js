@@ -89,6 +89,8 @@ function extractSubtitles() {
     chrome.runtime.sendMessage({
       action: 'updateSubtitles',
       subtitles: Array.from(extractedSubtitles)
+    }).catch(error => {
+      console.log('发送字幕更新消息失败:', error);
     });
   }
 
@@ -148,13 +150,18 @@ function startRealtimeSubtitleExtraction(video) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'checkVideo') {
     const hasVideo = checkForVideo();
-    if (hasVideo) {
-      const video = document.getElementsByTagName('video')[0];
-      const hasSubtitles = checkForSubtitles(video);
-      setupSubtitleObserver(video);
-      sendResponse({hasVideo: true, hasSubtitles: hasSubtitles});
-    } else {
-      sendResponse({hasVideo: false, hasSubtitles: false});
+    try {
+      if (hasVideo) {
+        const video = document.getElementsByTagName('video')[0];
+        const hasSubtitles = checkForSubtitles(video);
+        setupSubtitleObserver(video);
+        sendResponse({hasVideo: true, hasSubtitles: hasSubtitles});
+      } else {
+        sendResponse({hasVideo: false, hasSubtitles: false});
+      }
+    } catch (error) {
+      console.log('处理checkVideo消息时出错:', error);
+      sendResponse({hasVideo: false, hasSubtitles: false, error: error.message});
     }
   } else if (request.action === 'extractSubtitles') {
     const subtitles = extractSubtitles();
